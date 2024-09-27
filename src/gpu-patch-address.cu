@@ -78,6 +78,8 @@ memory_access_callback
     record->flags = flags;
     record->size = size;
     record->active = all_keep & active_mask;
+    // 5. Additional value(PC) for torch_view module
+    record->pc = pc;
   }
 
   __syncwarp(active_mask);

@@ -43,6 +43,7 @@ typedef struct gpu_patch_record {
 
 // Address only
 typedef struct gpu_patch_record_address {
+  uint64_t pc;
   uint32_t flags;
   uint32_t active;
   uint32_t size;

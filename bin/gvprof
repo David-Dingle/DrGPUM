@@ -115,6 +115,8 @@ echo "First pass: dump and analyze CPU and GPU binaries"
 #$GVPROF_LAUNCHER hpcrun -e gpu=nvidia -o $MEASUREMENTS $GVPROF_EXEC $GVPROF_ARGS &> $GVPROF_REDIRECT
 
 # Setting 2 for PyTorch codes
+export LD_LIBRARY_PATH=/usr/local/cuda/extras/CUPTI/lib64/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/xjding/Projects/new_DrGPUM/DrGPUM/gvprof/torch-monitor/usr/local/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=/home/xjding/anaconda3/envs/new_torch_monitor/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=/home/xjding/anaconda3/envs/new_torch_monitor/lib/python3.11/site-packages/torch:$LD_LIBRARY_PATH
 time $GVPROF_LAUNCHER hpcrun -e gpu=nvidia -o $MEASUREMENTS python $GVPROF_EXEC $GVPROF_ARGS &> $GVPROF_REDIRECT
