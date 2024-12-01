@@ -45,10 +45,14 @@ fi
 cd $DIR
 # Install spack
 git clone https://github.com/spack/spack.git
+  cd spack
+  git checkout 12866eb0d6fc0bc5ecc9ef0648e0b9144f5267b0  # 6812713
+  cd ../
 export SPACK_ROOT=$(pwd)/spack
 export PATH=${SPACK_ROOT}/bin:${PATH}
 source ${SPACK_ROOT}/share/spack/setup-env.sh
 
+spack clean -m
 # Fix bug
 #spack install libelf mbedtls gotcha@1.0.4 ##boost@1.83.0
 
@@ -76,6 +80,7 @@ UNWIND=$(spack find --path libunwind | tail -n 1 | cut -d ' ' -f 3)
 PY_DEV=$(spack find --path python@$PY_VERSION | tail -n 1 | cut -d ' ' -f 3)
 
 # Install torch monitor
+# use -DUSE_CXX11_ABI=0 in torch-monitor CMakeLists if Pytorch was compiled with CXX11 enabled
 mkdir $DIR/torch-monitor
 cd $DIR/torch-monitor
 cmake $SOURCE_DIR/torch-monitor -DTORCH_DIR=$PYTORCH_DIR
