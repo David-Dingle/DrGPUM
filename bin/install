@@ -94,7 +94,8 @@ cd redshow
 mkdir $DIR/redshow
 make clean
 make PREFIX=$DIR/redshow BOOST_DIR=$B LIBUNWIND_DIR=$UNWIND GPU_PATCH_DIR=$DIR/gpu-patch \
-TORCH_MONITOR_DIR=$DIR/torch-monitor/usr/local DEBUG=1 install
+TORCH_MONITOR_DIR=$DIR/torch-monitor/usr/local install
+#TORCH_MONITOR_DIR=$DIR/torch-monitor/usr/local DEBUG=1 install
 
 # install hpctoolkit
 cd $SOURCE_DIR
@@ -103,7 +104,7 @@ mkdir build
 cd build
 ../configure --prefix=$DIR/hpctoolkit --with-cuda=$CUDA_PATH \
 --with-sanitizer=$SANITIZER_PATH --with-gpu-patch=$DIR/gpu-patch \
---with-redshow=$DIR/redshow --with-spack=$S --enable-develop
+--with-redshow=$DIR/redshow --with-spack=$S #--enable-develop
 make install -j16
 
 cd $SOURCE_DIR
