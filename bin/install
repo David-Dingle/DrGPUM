@@ -104,7 +104,7 @@ mkdir build
 cd build
 ../configure --prefix=$DIR/hpctoolkit --with-cuda=$CUDA_PATH \
 --with-sanitizer=$SANITIZER_PATH --with-gpu-patch=$DIR/gpu-patch \
---with-redshow=$DIR/redshow --with-spack=$S #--enable-develop
+--with-redshow=$DIR/redshow --with-spack=$S --enable-develop
 make install -j16
 
 cd $SOURCE_DIR

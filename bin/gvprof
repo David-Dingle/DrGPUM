@@ -127,6 +127,7 @@ echo "First pass: dump and analyze CPU and GPU binaries"
 
 # Setting 2 for PyTorch codes
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/extras/CUPTI/lib64/:$LD_LIBRARY_PATH 
 export LD_LIBRARY_PATH=/home/xjding/Projects/new_DrGPUM/DrGPUM/gvprof/torch-monitor/usr/local/lib/:$LD_LIBRARY_PATH
 
 export LD_LIBRARY_PATH=/home/${USER_NAME}/anaconda3/envs/${CONDA_ENV}/lib/:$LD_LIBRARY_PATH
@@ -148,36 +149,49 @@ cd $MEASUREMENTS/structs
   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/bin/python3.11 &>> $GVPROF_REDIRECT
   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/Projects/new_DrGPUM/DrGPUM/gvprof/hpctoolkit/lib/hpctoolkit/libhpcrun.so.0.0.0 &>> $GVPROF_REDIRECT
   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/Projects/new_DrGPUM/DrGPUM/gvprof/hpctoolkit/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0 &>> $GVPROF_REDIRECT
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/lib/x86_64-linux-gnu/libcuda.so.535.183.01 &>> $GVPROF_REDIRECT
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.1/extras/CUPTI/lib64/libcupti.so.2023.1.0 &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/lib/x86_64-linux-gnu/libcuda.so &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/extras/CUPTI/lib64/libcupti.so &>> $GVPROF_REDIRECT
 
-  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcudart.so.12.1.105 &>> $GVPROF_REDIRECT
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcudart.so.12.1.55 &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcudart.so.12.1.105 &>> $GVPROF_REDIRECT
+  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudart.so &>> $GVPROF_REDIRECT
 
-  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcublas.so.12.1.0.26 &>> $GVPROF_REDIRECT
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcublas.so.12.1.0.26 &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcublas.so.12.1.0.26 &>> $GVPROF_REDIRECT
+  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcublas.so.12.1.0.26 &>> $GVPROF_REDIRECT
 
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcublasLt.so.12.1.0.26 &>> $GVPROF_REDIRECT
-  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcublasLt.so.12.1.0.26 &>> $GVPROF_REDIRECT
+  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcublasLt.so.12.1.0.26 &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcublasLt.so.12.1.0.26 &>> $GVPROF_REDIRECT
 
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.1/compute-sanitizer/libsanitizer-public.so &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/compute-sanitizer/libsanitizer-public.so &>> $GVPROF_REDIRECT
   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libtorch_python.so &>> $GVPROF_REDIRECT
   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libtorch_cuda.so &>> $GVPROF_REDIRECT
   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libc10_cuda.so &>> $GVPROF_REDIRECT
   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libomp.so &>> $GVPROF_REDIRECT
 
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcudnn.so.9.7.0 &>> $GVPROF_REDIRECT
+  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudnn.so.9.7.0 &>> $GVPROF_REDIRECT
 
-  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libcudnn_graph.so.9 &>> $GVPROF_REDIRECT
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcudnn_graph.so.9.7.0 &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libcudnn_graph.so.9 &>> $GVPROF_REDIRECT
+  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudnn_graph.so.9.7.0 &>> $GVPROF_REDIRECT
 
-  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libcudnn_engines_precompiled.so.9 &>> $GVPROF_REDIRECT
-  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcudnn_engines_precompiled.so.9.7.0 &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libcudnn_engines_precompiled.so.9 &>> $GVPROF_REDIRECT
+  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudnn_engines_precompiled.so.9.7.0 &>> $GVPROF_REDIRECT
 
-  # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so &>> $GVPROF_REDIRECT
+  /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so &>> $GVPROF_REDIRECT
+
+  for fullfile in ./*
+  do
+    filename=$(basename -- "$fullfile")
+    extension="${filename##*.}"
+    filename="${filename%.*}"
+    if [ $extension = "warnings" ]
+      then 
+        echo "$fullfile is found." &>> $GVPROF_REDIRECT
+        rm $filename.hpcstruct
+    fi
+  done
+
 cd ../..
 
-BASENAME=./$(basename $GVPROF_EXEC)
+# BASENAME=./$(basename $GVPROF_EXEC)
 # time hpcstruct $GVPROF_EXEC -o $BASENAME".hpcstruct" &>> $GVPROF_REDIRECT
 
 echo "Second pass: profiling"
@@ -195,7 +209,7 @@ fi
 if [ $GVPROF_EVENT = "torch_view" ]
 then
 # Setting torch-view 
-time hpcrun -e gpu=nvidia,$GVPROF_EVENT$GVPROF_SAMPLING_FREQUENCY -o $MEASUREMENTS -ck HPCRUN_SANITIZER_READ_TRACE_IGNORE=1 -ck HPCRUN_SANITIZER_TORCH_VIEW=1 -ck HPCRUN_SANITIZER_GPU_ANALYSIS_BLOCKS=0 -ck HPCRUN_SANITIZER_GPU_PATCH_RECORD_NUM=131072 python $GVPROF_EXEC $GVPROF_ARGS &>> $GVPROF_REDIRECT
+time hpcrun -e gpu=nvidia,$GVPROF_EVENT$GVPROF_SAMPLING_FREQUENCY -o $MEASUREMENTS -ck HPCRUN_SANITIZER_READ_TRACE_IGNORE=1 -ck HPCRUN_SANITIZER_TORCH_VIEW=1 -ck HPCRUN_SANITIZER_GPU_ANALYSIS_BLOCKS=0 -ck HPCRUN_SANITIZER_GPU_PATCH_RECORD_NUM=131072 python $GVPROF_EXEC $GVPROF_ARGS &>> /dev/null #$GVPROF_REDIRECT
 fi
 echo "Invoke hpcprof"
 # hpcstruct /home/xjding/anaconda3/envs/new_torch_monitor/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so
