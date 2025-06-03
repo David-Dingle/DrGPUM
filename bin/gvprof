@@ -127,6 +127,7 @@ echo "First pass: dump and analyze CPU and GPU binaries"
 
 # Setting 2 for PyTorch codes
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/compute-sanitizer/:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/extras/CUPTI/lib64/:$LD_LIBRARY_PATH 
 export LD_LIBRARY_PATH=/home/xjding/Projects/new_DrGPUM/DrGPUM/gvprof/torch-monitor/usr/local/lib/:$LD_LIBRARY_PATH
 

@@ -1,0 +1,219 @@
+#!/bin/bash
+
+usage()
+{
+    cat <<EOF
+Usage:
+    gvprof [profiling options] [executable] [executable options]
+    profiling options:
+    -h help
+    -e <profiling-event>
+      redundancy
+      data_flow
+      value_pattern
+    -j <cpu-threads> 
+      multi-threading analysis for binaries 
+    -ck <control-knob>
+      control knob values
+    -cfg gpu-cfg
+      enable fine-grained gpu instruction analysis
+    -s <sampling frequency>
+      set block sampling frequency
+    -l <launcher>
+      pass launcher command for execution. (e.g., "mpirun -np 1")
+    -v verbose
+      redirect output to gvprof.log
+EOF
+    exit 0
+}
+
+while test "x$1" != x
+do
+  arg="$1" ; shift
+  case "$arg" in
+    -v)
+      export GVPROF_VERBOSE=1
+      ;;
+    -j)
+      export GVPROF_THREADS=$1
+      shift
+      ;;
+    -e)
+      export GVPROF_EVENT=$1
+      shift
+      ;;
+    -env)
+      export CONDA_ENV=$1
+      shift
+      ;;
+    -cfg)
+      export GVPROF_CFG=1
+      ;;
+    -l)
+      export GVPROF_LAUNCHER="$1"
+      shift
+      ;;
+    -ck)
+      export GVPROF_CONTROL_KNOBS="$GVPROF_CONTROL_KNOBS -ck $1"
+      shift
+      ;;
+    -s)
+      export GVPROF_SAMPLING_FREQUENCY="@$1"
+      shift
+      ;;
+    -h)
+      usage
+      exit
+      ;;
+    * )
+      set -- "$arg" "$@"
+      break
+      ;;
+  esac
+done
+
+GVPROF_EXEC=$1
+GVPROF_ARGS="${*:2}"
+
+if [ -z "$GVPROF_EXEC" ]
+then
+  echo "Empty executable"
+  exit
+fi
+
+if [ -z "$GVPROF_EVENT" ]
+then
+  echo "Empty event"
+  exit
+fi
+
+if [ -z "$GVPROF_THREADS" ]
+then
+  export GVPROF_THREADS=1
+fi
+
+if [ -z "$CONDA_ENV" ]
+then
+  echo "Empty conda env"
+  exit
+fi
+
+if [ ! -z "$GVPROF_VERBOSE" ]
+then
+  export GVPROF_REDIRECT=./gvprof.log
+else
+  export GVPROF_REDIRECT=/dev/null
+fi
+
+##Test
+#echo $GVPROF_EXEC
+#echo $GVPROF_ARGS
+#echo $GVPROF_THREADS
+#echo $GVPROF_EVENT
+#echo $GVPROF_CONTROL_KNOBS
+#echo $GVPROF_LAUNCHER
+
+MEASUREMENTS=gvprof-measurements
+DATABASE=gvprof-database
+export USER_NAME=$(whoami)
+echo "Make sure $MEASUREMENTS and $DATABASE is clean"
+# rm -rf $MEASUREMENTS
+rm -rf $DATABASE
+
+echo "First pass: dump and analyze CPU and GPU binaries"
+
+## Setting 1 for .cu codes
+#$GVPROF_LAUNCHER hpcrun -e gpu=nvidia -o $MEASUREMENTS $GVPROF_EXEC $GVPROF_ARGS &> $GVPROF_REDIRECT
+
+# Setting 2 for PyTorch codes
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/compute-sanitizer/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/extras/CUPTI/lib64/:$LD_LIBRARY_PATH 
+export LD_LIBRARY_PATH=/home/xjding/Projects/new_DrGPUM/DrGPUM/gvprof/torch-monitor/usr/local/lib/:$LD_LIBRARY_PATH
+
+export LD_LIBRARY_PATH=/home/${USER_NAME}/anaconda3/envs/${CONDA_ENV}/lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/${USER_NAME}/anaconda3/envs/${CONDA_ENV}/lib/python3.11/site-packages/torch/lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/${USER_NAME}/anaconda3/envs/${CONDA_ENV}/lib/python3.11/site-packages/torchvision/lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/${USER_NAME}/anaconda3/envs/${CONDA_ENV}/lib/python3.11/site-packages/torchaudio/lib/:$LD_LIBRARY_PATH
+
+# time hpcrun -e gpu=nvidia -o $MEASUREMENTS python $GVPROF_EXEC $GVPROF_ARGS &> $GVPROF_REDIRECT
+
+rm -rf $MEASUREMENTS/*.hpcrun
+
+# if [ ! -z "$GVPROF_CFG" ]
+# then
+# time /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct --gpucfg yes -j $GVPROF_THREADS $MEASUREMENTS &>> $GVPROF_REDIRECT
+# else
+# time /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS $MEASUREMENTS &>> $GVPROF_REDIRECT
+# fi
+# cd $MEASUREMENTS/structs
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/bin/python3.11 &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/Projects/new_DrGPUM/DrGPUM/gvprof/hpctoolkit/lib/hpctoolkit/libhpcrun.so.0.0.0 &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/Projects/new_DrGPUM/DrGPUM/gvprof/hpctoolkit/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0 &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/lib/x86_64-linux-gnu/libcuda.so &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/extras/CUPTI/lib64/libcupti.so &>> $GVPROF_REDIRECT
+
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcudart.so.12.1.105 &>> $GVPROF_REDIRECT
+#   # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudart.so &>> $GVPROF_REDIRECT
+
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcublas.so.12.1.0.26 &>> $GVPROF_REDIRECT
+#   # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcublas.so.12.1.0.26 &>> $GVPROF_REDIRECT
+
+#   # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcublasLt.so.12.1.0.26 &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libcublasLt.so.12.1.0.26 &>> $GVPROF_REDIRECT
+
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/compute-sanitizer/libsanitizer-public.so &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libtorch_python.so &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libtorch_cuda.so &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libc10_cuda.so &>> $GVPROF_REDIRECT
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/libomp.so &>> $GVPROF_REDIRECT
+
+#   # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudnn.so.9.7.0 &>> $GVPROF_REDIRECT
+
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libcudnn_graph.so.9 &>> $GVPROF_REDIRECT
+#   # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudnn_graph.so.9.7.0 &>> $GVPROF_REDIRECT
+
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libcudnn_engines_precompiled.so.9 &>> $GVPROF_REDIRECT
+#   # /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudnn_engines_precompiled.so.9.7.0 &>> $GVPROF_REDIRECT
+
+#   /home/xjding/Projects/GPA/GPA/gpa/hpctoolkit/bin/hpcstruct -j $GVPROF_THREADS /home/$USER_NAME/anaconda3/envs/$CONDA_ENV/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so &>> $GVPROF_REDIRECT
+
+#   for fullfile in ./*
+#   do
+#     filename=$(basename -- "$fullfile")
+#     extension="${filename##*.}"
+#     filename="${filename%.*}"
+#     if [ $extension = "warnings" ]
+#       then 
+#         echo "$fullfile is found." &>> $GVPROF_REDIRECT
+#         rm $filename.hpcstruct
+#     fi
+#   done
+
+# cd ../..
+
+# BASENAME=./$(basename $GVPROF_EXEC)
+# time hpcstruct $GVPROF_EXEC -o $BASENAME".hpcstruct" &>> $GVPROF_REDIRECT
+
+echo "Second pass: profiling"
+## Setting 1 for .cu codes
+#$GVPROF_LAUNCHER hpcrun -e gpu=nvidia,$GVPROF_EVENT$GVPROF_SAMPLING_FREQUENCY -o $MEASUREMENTS $GVPROF_CONTROL_KNOBS $GVPROF_EXEC $GVPROF_ARGS &>> $GVPROF_REDIRECT
+# Setting 2 for PyTorch codes
+#hpcrun -e gpu=nvidia,$GVPROF_EVENT$GVPROF_SAMPLING_FREQUENCY -o $MEASUREMENTS $GVPROF_CONTROL_KNOBS python $GVPROF_EXEC $GVPROF_ARGS &>> $GVPROF_REDIRECT
+# Setting 3  for torch monitor
+# hpcrun -e gpu=nvidia,$GVPROF_EVENT$GVPROF_SAMPLING_FREQUENCY -o $MEASUREMENTS -ck HPCRUN_SANITIZER_READ_TRACE_IGNORE=1 -ck  HPCRUN_SANITIZER_TORCH_ANALYSIS=1 -ck HPCRUN_SANITIZER_GPU_ANALYSIS_BLOCKS=0 -ck HPCRUN_SANITIZER_GPU_PATCH_RECORD_NUM=131072 python $GVPROF_EXEC $GVPROF_ARGS &>> $GVPROF_REDIRECT
+if [ $GVPROF_EVENT = "redundancy" ]
+then
+# Setting 4  for redundancy
+time hpcrun -e gpu=nvidia,$GVPROF_EVENT$GVPROF_SAMPLING_FREQUENCY -o $MEASUREMENTS -ck HPCRUN_SANITIZER_MEM_VIEWS=10 -ck HPCRUN_SANITIZER_PC_VIEWS=10 python $GVPROF_EXEC $GVPROF_ARGS &>> $GVPROF_REDIRECT
+fi
+if [ $GVPROF_EVENT = "torch_view" ]
+then
+# Setting torch-view 
+time hpcrun -e gpu=nvidia,$GVPROF_EVENT$GVPROF_SAMPLING_FREQUENCY -o $MEASUREMENTS -ck HPCRUN_SANITIZER_READ_TRACE_IGNORE=1 -ck HPCRUN_SANITIZER_TORCH_VIEW=1 -ck HPCRUN_SANITIZER_GPU_ANALYSIS_BLOCKS=0 -ck HPCRUN_SANITIZER_GPU_PATCH_RECORD_NUM=131072 python $GVPROF_EXEC $GVPROF_ARGS &> $GVPROF_REDIRECT
+fi
+echo "Invoke hpcprof"
+# hpcstruct /home/xjding/anaconda3/envs/new_torch_monitor/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so
+# time hpcprof -o $DATABASE $MEASUREMENTS &>> $GVPROF_REDIRECT
+
+# hpcprof -S $BASENAME".hpcstruct" -o $DATABASE $MEASUREMENTS &>> $GVPROF_REDIRECT
