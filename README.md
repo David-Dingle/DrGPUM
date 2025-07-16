@@ -25,9 +25,8 @@ export PATH=${DrGPUM_PATH}/hpctoolkit/bin:$PATH
 export PATH=${DrGPUM_PATH}/redshow/bin:$PATH
 
 # Test a sample
-cd samples/vectorAdd.f32
-make
-gvprof -v -e memory_liveness ./vectorAdd
+conda activate PYTORCH_ENV_NAME
+gvprof -env PYTORCH_ENV_NAME -v -cfg -j THREADS -e torch_view pytorch_exec.py args
 ```
 
 ## Documentation

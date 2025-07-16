@@ -9,6 +9,7 @@
 #define GPU_PATCH_ANALYSIS_THREADS (1024)
 #define GPU_PATCH_ANALYSIS_ITEMS (4)
 #define GPU_PATCH_ADDRESS_DICT_SIZE (1024)
+#define GPU_PATCH_DEBUGGING_CHAR_SIZE (1024) // Only for debugging
 
 enum GPUPatchFlags {
   GPU_PATCH_NONE = 0,
@@ -65,6 +66,19 @@ typedef struct gpu_patch_aux_address_dict {
   uint8_t write[GPU_PATCH_ADDRESS_DICT_SIZE];
 } gpu_patch_aux_address_dict_t;
 
+/**
+ * Auxiliary data for torch-view on-GPU func input tensors memory range hit
+*/
+typedef struct gpu_patch_aux_torchview_dict {
+  uint64_t function_pc_offset; // Offset of current function starting pc. 
+  uint32_t view_range_size; // computed by the host after PyTorch function tensor-typed inputs are known
+  gpu_patch_analysis_address_t* start_end; // assign view_range_size * sizeof(gpu_patch_analysis_address_t) memory; Must BE Initialized with sorted order
+  uint64_t current_read_pc_size; // (func-insts / 8)
+  uint64_t current_write_pc_size; // (func-insts / 8) keep this redundancy incase we want to use precise sized map
+  uint64_t* read_pc_range_bit_map; // a logical 2-D array with dim: [max_pc_size, ceiling(view_range_size / 64) + 1]; Initialize with Zeros
+  uint64_t* write_pc_range_bit_map; // same
+} gpu_patch_aux_torchview_dict_t;
+
 typedef struct gpu_patch_buffer {
   volatile uint32_t full;
   volatile uint32_t analysis;
@@ -77,8 +91,8 @@ typedef struct gpu_patch_buffer {
   uint32_t type;
   uint32_t flags;  // read or write or both
   void *records;
-  void *aux;
-  void *torch_aux;
+  void *aux;  // useed by liveness and torchview
+  void *torch_aux; // use with liveness + torch memory block traceing
 } gpu_patch_buffer_t;
 
 #endif
